@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns, Rank2Types, ScopedTypeVariables, TypeOperators #-}
+{-# LANGUAGE BangPatterns, Rank2Types, ScopedTypeVariables, TypeOperators, RecordWildCards #-}
 
 -- |
 -- Module: Data.BloomFilter
@@ -70,6 +70,13 @@ module Data.BloomFilter
 
     -- | The raw bit array used by the immutable 'Bloom' type.
     , bitArray
+
+    -- * To serialize/deserialize, without going to closure serialization
+    -- | We provide two functions whose argument / output can be pluged in Binary etc..
+    -- 
+    -- | This extract the state
+    , extractState
+    , recreateFromHashAndState
     ) where
 
 import Control.Monad (liftM, forM_)
@@ -102,6 +109,13 @@ instance Show (Bloom a) where
 
 instance NFData (Bloom a) where
     rnf !_ = ()
+
+extractState :: Bloom a -> (Int, Int, (UArray Int Hash))
+extractState x = (shift x, mask x, bitArray x)
+
+recreateFromHashAndState :: (a -> [Hash]) -> (Int, Int, (UArray Int Hash)) -> Bloom a
+recreateFromHashAndState hashes (shift, mask, bitArray) = B {..}
+
 
 logBitsInHash :: Int
 logBitsInHash = 5 -- logPower2 bitsInHash
