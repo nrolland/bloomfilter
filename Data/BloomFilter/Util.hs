@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns, MagicHash, TypeOperators #-}
+{-# LANGUAGE BangPatterns, MagicHash, TypeOperators, CPP #-}
 
 module Data.BloomFilter.Util
     (
@@ -40,10 +40,18 @@ class FastShift a where
 
 instance FastShift Word32 where
     {-# INLINE shiftL #-}
+    #if MIN_VERSION_base(4,16,0)
+    shiftL (W32# x#) (I# i#) = W32# (x# `uncheckedShiftLWord32#` i#)
+    #else
     shiftL (W32# x#) (I# i#) = W32# (x# `uncheckedShiftL#` i#)
+    #endif
 
     {-# INLINE shiftR #-}
-    shiftR (W32# x#) (I# i#) = W32# (x# `uncheckedShiftRL#` i#)
+    #if MIN_VERSION_base(4,16,0)
+    shiftR (W32# x#) (I# i#) = W32# (x# `uncheckedShiftRLWord32#` i#)
+    #else
+    shiftL (W32# x#) (I# i#) = W32# (x# `uncheckedShiftRL#` i#)
+    #endif
 
 instance FastShift Word64 where
     {-# INLINE shiftL #-}
